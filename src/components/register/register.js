@@ -4,6 +4,7 @@ import {Button} from "react-bootstrap";
 import {Form} from "react-bootstrap";
 import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
 import {faCheck, faTimes} from "@fortawesome/free-solid-svg-icons";
+import axiosClient from '../../components/api/axios-config'
 
 import './register.css'
 
@@ -51,6 +52,24 @@ const Register = () => {
             setValidMPW(false)
     }, [password, matchPassword])
 
+    const postData = async (e) => {
+        e.preventDefault();
+        try {
+            const userRegister = {
+                name: e.target.name.value,
+                username: e.target.username.value,
+                roles: "Player",
+                password: e.target.password.value
+            }
+
+            const response = await axiosClient
+                .post('/api/v1/auth/', userRegister)
+                .then(setSubmitSuccess('You have registered'));
+        } catch (error) {
+            setSubmitSuccess('Something went wrong');
+        }
+    }
+
     return(
         <Container>
             <header>
@@ -58,14 +77,14 @@ const Register = () => {
             </header>
             <main className="register-container">
                 <div className="register-layout">
-                    <Form>
+                    <Form onSubmit={postData}>
                         <Form.Group className="me-2">
                             <Form.Label>Name:
                                 <span className={validName?"valid":"hide"}>
                                     <FontAwesomeIcon icon={faCheck} className={"valid-icon"} />
                                 </span>>
                                 <span className={validName?"hide":"valid"}>
-                                    <FontAwesomeIcon icon={faTimes} className={"valid-icon"} />
+                                    <FontAwesomeIcon icon={faTimes} className={"invalid-icon"} />
                                 </span>>
                             </Form.Label>
                             <Form.Control type={"text"} placeholder={"Enter Name"}
@@ -81,11 +100,11 @@ const Register = () => {
                                     <FontAwesomeIcon icon={faCheck} className={"valid-icon"} />
                                 </span>>
                                 <span className={validUser?"hide":"valid"}>
-                                    <FontAwesomeIcon icon={faTimes} className={"valid-icon"} />
+                                    <FontAwesomeIcon icon={faTimes} className={"invalid-icon"} />
                                 </span>>
                             </Form.Label>
                             <Form.Control type={"text"} placeholder={"Enter Username"}
-                                          id={"user"}
+                                          id={"username"}
                                           autoComplete={"off"}
                                           onChange={(e) => setUsername(e.target.value)}
                             />
@@ -96,7 +115,7 @@ const Register = () => {
                                     <FontAwesomeIcon icon={faCheck} className={"valid-icon"} />
                                 </span>>
                                 <span className={validPW?"hide":"valid"}>
-                                    <FontAwesomeIcon icon={faTimes} className={"valid-icon"} />
+                                    <FontAwesomeIcon icon={faTimes} className={"invalid-icon"} />
                                 </span>>
                             </Form.Label>
                             <Form.Control type={"password"} placeholder={"Enter Password"}
@@ -111,7 +130,7 @@ const Register = () => {
                                     <FontAwesomeIcon icon={faCheck} className={"valid-icon"} />
                                 </span>>
                                 <span className={validMPW?"hide":"valid"}>
-                                    <FontAwesomeIcon icon={faTimes} className={"valid-icon"} />
+                                    <FontAwesomeIcon icon={faTimes} className={"invalid-icon"} />
                                 </span>>
                             </Form.Label>
                             <Form.Control type={"password"} placeholder={"Confirm Password"}
@@ -126,6 +145,12 @@ const Register = () => {
                             Submit
                         </Button>
                     </Form>
+                    {(submitSuccess)?
+                        <section className={"register-message"}>
+                            {submitSuccess}
+                        </section>
+                        : null
+                    }
                 </div>
             </main>
         </Container>
