@@ -54,6 +54,7 @@ const Register = () => {
 
     const postData = async (e) => {
         e.preventDefault();
+
         try {
             const userRegister = {
                 name: e.target.name.value,
