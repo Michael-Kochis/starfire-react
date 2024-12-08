@@ -1,50 +1,43 @@
 import React, {useEffect, useRef, useState} from "react";
 import {Button, Container, Form} from "react-bootstrap";
-import {FontAwesomeIcon} from "@fortawesome/react-fontawesome";
-import {faCheck, faTimes} from "@fortawesome/free-solid-svg-icons";
 import axiosClient from "../api/axios-config";
 
-import './login.css'
+import {HttpStatusCode} from "axios";
+import './Login.css'
 
 const Login = () => {
     const nameRef = useRef();
     const [username, setUsername] = useState('');
-    const [validUser, setValidUser] = useState(false);
     const [password, setPassword] = useState('');
-    const [validPW, setValidPW] = useState(false);
-    const [submitSuccess, setSubmitSuccess] = useState(false);
+    const [submitSuccess, setSubmitSuccess] = useState("");
 
     useEffect(()=> {
         nameRef.current.focus();
     }, [])
 
-    useEffect( () => {
-        if (username.length >= 8)
-            setValidUser(true)
-        else
-            setValidUser(false)
-    }, [username])
-
-    useEffect( () => {
-        if (password.length >= 8)
-            setValidPW(true)
-        else
-            setValidPW(false)
-    }, [password])
-
     const handleLogon = async (e) => {
         e.preventDefault();
 
         try {
-            const userRegister = {
-                username: e.target.username.value,
-                password: e.target.password.value
+            const userName = e.target.username.value;
+            const passWord = e.target.password.value;
+
+            const b64Encode = btoa(`${userName}:${passWord}`);
+            const authConfig = {
+                headers: {
+                    Authorization: `Basic ${b64Encode}`
+                }
             }
 
-            const response = await axiosClient
-                .get('/api/v1/auth/me', userRegister)
-                .then(setSubmitSuccess('You have logged in'));
+            const resp = await axiosClient.get('/api/v1/auth/me', authConfig);
+            const data = resp.data;
+
+             if (resp.status === HttpStatusCode.Ok) {
+
+                 setSubmitSuccess("You have logged in as "+ data.principal.username);
+             }
         } catch (error) {
+            alert(error);
             setSubmitSuccess('Something went wrong');
         }
 
@@ -53,43 +46,35 @@ const Login = () => {
     return(
         <Container>
             <header>
-                <h4>Register</h4>
+                <h4>Login</h4>
             </header>
             <main className="register-container">
                 <div className="register-layout">
                     <Form onSubmit={handleLogon}>
                         <Form.Group className="me-2">
-                            <Form.Label>Username:
-                                <span className={validUser?"valid":"hide"}>
-                                    <FontAwesomeIcon icon={faCheck} className={"valid-icon"} />
-                                </span>>
-                                <span className={validUser?"hide":"valid"}>
-                                    <FontAwesomeIcon icon={faTimes} className={"invalid-icon"} />
-                                </span>>
+                            <Form.Label>
+                                Username:
                             </Form.Label>
                             <Form.Control type={"text"} placeholder={"Enter Username"}
                                           id={"username"}
                                           ref={nameRef}
                                           autoComplete={"off"}
                                           onChange={(e) => setUsername(e.target.value)}
+                                          value={username}
                             />
                         </Form.Group>
                         <Form.Group className="me-2">
-                            <Form.Label>Password:
-                                <span className={validPW?"valid":"hide"}>
-                                    <FontAwesomeIcon icon={faCheck} className={"valid-icon"} />
-                                </span>>
-                                <span className={validPW?"hide":"valid"}>
-                                    <FontAwesomeIcon icon={faTimes} className={"invalid-icon"} />
-                                </span>>
+                            <Form.Label>
+                                Password:
                             </Form.Label>
                             <Form.Control type={"password"} placeholder={"Enter Password"}
                                           id={"password"}
                                           autoComplete={"off"}
                                           onChange={(e) => setPassword(e.target.value)}
+                                          value={password}
                             />
                         </Form.Group>
-                        <Button disabled={!validUser || !validPW}
+                        <Button
                                 variant={"info"}
                                 type={"submit"} >
                             Submit
